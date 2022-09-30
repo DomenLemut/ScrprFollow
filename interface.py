@@ -17,7 +17,7 @@ ThomannFollower v1.0
 --------------------------------------------------------------------
 """
 
-threads = []
+threads = list()
 emails = list()
 
 class Email:
@@ -42,7 +42,7 @@ def emailPrintLine():
 def emailLineManager():
     while(1):
         if(len(emails) > 0):
-            emails[0].send
+            emails[0].send()
             print(emails[0])
             del(emails[0])
 
@@ -78,6 +78,7 @@ def record(url, recipients, name, subject):
                 emails.append(Email(recipients, 
                 'price change on '+ name + ' on Thomann.de',
                 'price for' + name +' has changed from ' + price + ' to ' + newPrice
+                + '\ncheck it here -> ' + url
                 ))
                 price = newPrice
         
@@ -98,22 +99,22 @@ def follow():
     subject = 'Item subscription on ' + name
 
     #------------------------------------------------------------------------------------------------------------------------------
-    mail = Email(recipients, subject,
+    emails.append(Email(recipients, subject,
     """Hello there,
 
-    You have subscribed to follow""" + name +  """from , you will recieve a mail every time selected item changes price.
-    """)
+    You have subscribed to follow """ + name +  """. you will recieve a mail every time selected item changes price.
+    """))
     #-------------------------------------------------------------------------------------------------------------------------------
-    emails.append(mail)
+    
 
     print("\n\n")
 
-    record(url, recipients, name, subject)
+    threads.append(threading.Thread(target=record, args=(url, recipients, name, subject)))
 
 
 
 
-#code
+
 #***********************************************************************************************************************************
 if __name__ == "__main__":
     print(banner_text)
@@ -122,18 +123,18 @@ if __name__ == "__main__":
     password = input("Your user password: ")
     emailSnd = threading.Thread(target=emailLineManager)
     emailSnd.start()
-    # print("\nYou can set a new follow with typing 'New'")
 
-    # while(1):
-    #     wait = input()
-    #     if(wait == 'New'):
-    #         follow()
-    #     else:
-    #         print("not a command")
+    while(1):
+        curr = input()
+        if(curr == 'New'):
+            follow()
+        elif(curr == 'print-ln'):
+            emailPrintLine()
+    
+    emailSnd.join()
 
-
-
-
+    for thread in threads:
+        thread.join()
 
 
 #**********************************************************************************************************************************
